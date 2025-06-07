@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "socket.io": "https://deno.land/x/socket_io@0.2.1/mod.ts",
+    "oak": "https://deno.land/x/oak@14.2.0/mod.ts"
+  }
+}
