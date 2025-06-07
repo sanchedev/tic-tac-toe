@@ -16,9 +16,24 @@ export function createRoom(
 export function joinRoom(socket: Socket, roomId: string) {
   console.log(`joining room ${roomId}`)
   if (!rooms.has(roomId)) {
-    return
+    return socket.emit(
+      'message',
+      msgObj('Error', 'La sala no existe.', 'error')
+    )
   }
   const room = rooms.get(roomId)!
+
+  if (room.players.length === 2) {
+    return socket.emit(
+      'message',
+      msgObj(
+        'Error',
+        'La sala se encuentra con el máximo de jugadores.',
+        'error'
+      )
+    )
+  }
+
   room.players.push(socket.id)
   socket.join(roomId)
   socket.emit('join', room.id)
@@ -31,17 +46,30 @@ export function joinRoom(socket: Socket, roomId: string) {
 
 export function leaveRoom(socket: Socket, roomId: string) {
   if (!rooms.has(roomId)) {
-    return
+    return socket.emit(
+      'message',
+      msgObj('Error', 'La sala no existe.', 'error')
+    )
   }
   const room = rooms.get(roomId)!
   const playerIndex = room.players.indexOf(socket.id)
   if (playerIndex === -1) {
-    return
+    return socket.emit(
+      'message',
+      msgObj('Error', 'No estás en la sala.', 'error')
+    )
   }
   room.players.splice(playerIndex, 1)
   socket.leave(roomId)
   socket.emit('leave')
-  console.log(`leaving room ${roomId}`)
+
+  socket.emit('message', msgObj('Salida', 'Has salido de la sala.', 'success'))
+  socket
+    .to(roomId)
+    .emit(
+      'message',
+      msgObj('Salida', 'Tu oponente ha salido de la sala.', 'success')
+    )
 
   resetRoom(socket, room)
 
@@ -53,18 +81,22 @@ export function leaveRoom(socket: Socket, roomId: string) {
 
 export function place(socket: Socket, roomId: string, x: number, y: number) {
   if (!rooms.has(roomId)) {
-    return
+    return socket.emit(
+      'message',
+      msgObj('Error', 'La sala no existe.', 'error')
+    )
   }
   const room = rooms.get(roomId)!
   if (room.players.length !== 2) {
-    return
+    return socket.emit(
+      'message',
+      msgObj('Error', 'La sala no tiene 2 jugadores.', 'error')
+    )
   }
-  const player = room.currentTurn === 'X' ? room.players[0] : room.players[1]
-
   const me = room.players.indexOf(socket.id) === 0 ? 'X' : 'O'
 
-  if (player !== socket.id) {
-    return
+  if (me !== room.currentTurn) {
+    return socket.emit('message', msgObj('Error', 'No es tu turno.', 'error'))
   }
   room.place(x, y)
   socket.to(roomId).emit('placed', { x, y }, me)
@@ -96,4 +128,8 @@ export function reset(socket: Socket, room: Room) {
   socket.to(room.id).emit('reseted')
   socket.emit('reseted')
   resetRoom(socket, room)
+}
+
+function msgObj(title: string, description: string, type: 'success' | 'error') {
+  return { title, description, type }
 }
