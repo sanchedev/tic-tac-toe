@@ -3,7 +3,7 @@ import { createContext, use } from 'react'
 interface GameContextType {
   currentPlayer: 'X' | 'O'
   players: [string, string]
-  winner?: 'X' | 'O'
+  winner?: 'X' | 'O' | 'draw'
 }
 
 export const GameContext = createContext<GameContextType>({

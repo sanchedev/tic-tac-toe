@@ -107,6 +107,10 @@ export function place(socket: Socket, roomId: string, x: number, y: number) {
     socket.to(roomId).emit('winner', winner)
     socket.emit('winner', winner)
     return
+  } else if (room.board.every((cell) => cell !== '')) {
+    socket.to(roomId).emit('winner', 'draw')
+    socket.emit('winner', 'draw')
+    return
   }
 
   socket.to(roomId).emit('change-turn', room.currentTurn)

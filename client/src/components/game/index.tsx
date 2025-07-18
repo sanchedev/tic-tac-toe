@@ -16,7 +16,9 @@ import { CircleIcon, XIcon } from 'lucide-react'
 
 export default function Game({ players }: { players: string[] | null }) {
   const [currentPlayer, setCurrentPlayer] = useState<'X' | 'O'>('X')
-  const [winner, setWinner] = useState<'X' | 'O' | undefined>(undefined)
+  const [winner, setWinner] = useState<'X' | 'O' | 'draw' | undefined>(
+    undefined
+  )
   const { roomId } = useGlobal()
 
   useEffect(() => {
@@ -24,7 +26,7 @@ export default function Game({ players }: { players: string[] | null }) {
       setCurrentPlayer(player)
     }
 
-    const onWinner = (player: 'X' | 'O' | undefined) => {
+    const onWinner = (player: 'X' | 'O' | 'draw' | undefined) => {
       setWinner(player)
     }
 
@@ -51,18 +53,26 @@ export default function Game({ players }: { players: string[] | null }) {
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle className='text-2xl text-center'>
-                    {me === winner ? '¡Ganaste!' : 'Perdiste'}
+                    {winner === 'draw'
+                      ? 'Empate'
+                      : me === winner
+                      ? '¡Ganaste!'
+                      : 'Perdiste'}
                   </AlertDialogTitle>
                 </AlertDialogHeader>
-                <p className='text-center'>
-                  El jugador{' '}
-                  {winner === 'X' ? (
-                    <XIcon className='inline' />
-                  ) : (
-                    <CircleIcon className='inline' />
-                  )}{' '}
-                  ha ganado
-                </p>
+                {winner === 'draw' ? (
+                  <p className='text-center'>Parecen haber empatado.</p>
+                ) : (
+                  <p className='text-center'>
+                    El jugador{' '}
+                    {winner === 'X' ? (
+                      <XIcon className='inline' />
+                    ) : (
+                      <CircleIcon className='inline' />
+                    )}{' '}
+                    ha ganado
+                  </p>
+                )}
                 <div className='grid sm:grid-cols-2 gap-4'>
                   <Button
                     className='w-full'
